@@ -1,0 +1,19 @@
+{
+  "name": "plan-de-vuelo",
+  "version": "1.0.0",
+  "description": "Carga, guarda y envía planes de vuelo OACI a DINACIA (Uruguay)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node --no-warnings server.js",
+    "test": "node --no-warnings --test test/*.test.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.3.0",
+    "nodemailer": "^10.1.0"
+  },
+  "engines": {
+    "node": ">=22.13"
+  }
+}

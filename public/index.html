@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Plan de Vuelo Uruguay</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">✈ Plan de Vuelo <span>Uruguay</span></div>
+    <nav id="main-nav" hidden>
+      <a href="#/nuevo" data-nav="nuevo">Nuevo plan</a>
+      <a href="#/planes" data-nav="planes">Mis planes</a>
+      <span class="who" id="who"></span>
+      <button type="button" id="btn-logout" class="link">Salir</button>
+    </nav>
+  </header>
+  <div id="mode-banner" class="banner" hidden></div>
+
+  <main>
+    <!-- Acceso -->
+    <section id="view-auth" hidden>
+      <div class="auth">
+        <div class="auth-intro">
+          <h1>Tus planes de vuelo, listos para DINACIA</h1>
+          <p class="hint">Cargá el plan con el formulario OACI, guardalo y envialo a plandevuelo@dinacia.gub.uy. Cada piloto tiene su cuenta y ve solo sus planes.</p>
+        </div>
+        <div class="auth-card">
+          <div class="tabs" role="tablist">
+            <button type="button" data-auth="login" class="active">Iniciar sesión</button>
+            <button type="button" data-auth="register">Crear cuenta</button>
+          </div>
+          <form id="form-login" data-pane="login" novalidate>
+            <label>Correo<input name="email" type="email" autocomplete="email" required></label>
+            <label>Contraseña<input name="password" type="password" autocomplete="current-password" required></label>
+            <button type="submit" class="primary">Entrar</button>
+            <button type="button" class="link" data-auth="forgot">Olvidé mi contraseña</button>
+          </form>
+          <form id="form-register" data-pane="register" novalidate hidden>
+            <label>Nombre y apellido<input name="name" autocomplete="name" required></label>
+            <label>Correo<input name="email" type="email" autocomplete="email" required></label>
+            <label>Contraseña (mínimo 8 caracteres)<input name="password" type="password" autocomplete="new-password" minlength="8" required></label>
+            <button type="submit" class="primary">Crear cuenta</button>
+          </form>
+          <form id="form-forgot" data-pane="forgot" novalidate hidden>
+            <p class="hint">Te mandamos un enlace a tu correo para elegir una contraseña nueva.</p>
+            <label>Correo<input name="email" type="email" autocomplete="email" required></label>
+            <button type="submit" class="primary">Enviar enlace</button>
+            <button type="button" class="link" data-auth="login">Volver</button>
+          </form>
+          <form id="form-reset" data-pane="reset" novalidate hidden>
+            <p class="hint">Elegí tu contraseña nueva.</p>
+            <label>Contraseña nueva<input name="password" type="password" autocomplete="new-password" minlength="8" required></label>
+            <button type="submit" class="primary">Guardar contraseña</button>
+          </form>
+          <p id="auth-msg" class="auth-msg" hidden></p>
+        </div>
+      </div>
+    </section>
+    <!-- Formulario -->
+    <section id="view-form" hidden>
+      <div class="layout">
+        <form id="fpl-form" novalidate>
+          <h1 id="form-title">Nuevo plan de vuelo</h1>
+          <p class="hint">Formulario OACI según AIP Uruguay ENR 1.10. Las horas son <b>UTC</b>. Presentá el plan al menos 60 minutos antes de la salida.</p>
+
+          <fieldset>
+            <legend>Aeronave y reglas</legend>
+            <div class="grid">
+              <label>7 · Identificación de la aeronave<input name="aircraftId" maxlength="7" placeholder="CXABC" required></label>
+              <label>8 · Reglas de vuelo
+                <select name="flightRules"><option value="V">V – VFR</option><option value="I">I – IFR</option><option value="Y">Y – IFR luego VFR</option><option value="Z">Z – VFR luego IFR</option></select></label>
+              <label>Tipo de vuelo
+                <select name="flightType"><option value="G">G – Aviación general</option><option value="S">S – Regular</option><option value="N">N – No regular</option><option value="M">M – Militar</option><option value="X">X – Otro</option></select></label>
+              <label>9 · Número de aeronaves<input name="numberOfAircraft" type="number" min="1" max="99" value="1"></label>
+              <label>Tipo de aeronave<input name="aircraftType" maxlength="4" placeholder="C172"></label>
+              <label>Estela turbulenta
+                <select name="wakeTurbulence"><option value="L">L – Ligera</option><option value="M">M – Media</option><option value="H">H – Pesada</option><option value="J">J – Súper</option></select></label>
+              <label>10 · Equipo COM/NAV<input name="equipment" placeholder="S o SDFG"></label>
+              <label>Equipo de vigilancia<input name="surveillance" placeholder="C o N"></label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Salida, ruta y destino</legend>
+            <div class="grid">
+              <label>13 · Aeródromo de salida<input name="departureAerodrome" maxlength="4" list="aerodromes" placeholder="SUMU"></label>
+              <label>Fecha (UTC)<input name="departureDate" type="date"></label>
+              <label>Hora (UTC, HHMM)<input name="departureTime" maxlength="5" placeholder="1500"></label>
+              <label>15 · Velocidad de crucero<input name="cruisingSpeed" placeholder="N0110"></label>
+              <label>Nivel de crucero<input name="cruisingLevel" placeholder="A045 o VFR"></label>
+              <label class="wide">Ruta<input name="route" placeholder="DCT"></label>
+              <label>16 · Aeródromo de destino<input name="destinationAerodrome" maxlength="4" list="aerodromes" placeholder="SULS"></label>
+              <label>Duración total prevista (HHMM)<input name="totalEet" maxlength="5" placeholder="0045"></label>
+              <label>Aeródromo alternativo<input name="alternate1" maxlength="4" list="aerodromes"></label>
+              <label>2º alternativo<input name="alternate2" maxlength="4" list="aerodromes"></label>
+              <label class="wide">18 · Otros datos<input name="otherInfo" placeholder="PBN/... RMK/... (DOF se agrega solo)"></label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>19 · Información suplementaria</legend>
+            <div class="grid">
+              <label>Autonomía (HHMM)<input name="endurance" maxlength="5" placeholder="0400"></label>
+              <label>Personas a bordo<input name="personsOnBoard" maxlength="3" placeholder="2"></label>
+              <div class="checks"><span>Radio de emergencia</span>
+                <label><input type="checkbox" name="emergencyRadio" value="U">U UHF</label>
+                <label><input type="checkbox" name="emergencyRadio" value="V">V VHF</label>
+                <label><input type="checkbox" name="emergencyRadio" value="E">E ELT</label></div>
+              <div class="checks"><span>Equipo de supervivencia</span>
+                <label><input type="checkbox" name="survivalEquipment" value="P">P Polar</label>
+                <label><input type="checkbox" name="survivalEquipment" value="D">D Desierto</label>
+                <label><input type="checkbox" name="survivalEquipment" value="M">M Marítimo</label>
+                <label><input type="checkbox" name="survivalEquipment" value="J">J Selva</label></div>
+              <div class="checks"><span>Chalecos</span>
+                <label><input type="checkbox" name="jackets" value="L">L Luz</label>
+                <label><input type="checkbox" name="jackets" value="F">F Fluoresceína</label>
+                <label><input type="checkbox" name="jackets" value="U">U UHF</label>
+                <label><input type="checkbox" name="jackets" value="V">V VHF</label></div>
+              <label>Botes: número<input name="dinghiesNumber" maxlength="2"></label>
+              <label>Capacidad<input name="dinghiesCapacity" maxlength="3"></label>
+              <label class="inline"><input type="checkbox" name="dinghiesCover"> Cubierta</label>
+              <label>Color de botes<input name="dinghiesColour"></label>
+              <label class="wide">Color y marcas de la aeronave<input name="aircraftColour" placeholder="BLANCO CON FRANJAS AZULES"></label>
+              <label class="wide">Observaciones<input name="remarks"></label>
+              <label class="wide">Piloto al mando<input name="pilotInCommand"></label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Datos de contacto</legend>
+            <div class="grid">
+              <label>Nombre<input name="contactName"></label>
+              <label>Teléfono<input name="contactPhone" type="tel"></label>
+              <label>E-mail<input name="contactEmail" type="email"></label>
+              <label>Licencia de piloto<input name="pilotLicense"></label>
+            </div>
+          </fieldset>
+
+          <div class="actions">
+            <button type="submit" class="primary">Guardar plan</button>
+            <a href="#/planes" class="btn">Cancelar</a>
+          </div>
+        </form>
+
+        <aside class="preview">
+          <h2>Mensaje FPL</h2>
+          <pre id="fpl-preview">Completá el formulario para ver el mensaje.</pre>
+          <pre id="item19-preview" class="muted"></pre>
+          <ul id="warnings" class="warnings"></ul>
+        </aside>
+      </div>
+    </section>
+
+    <!-- Lista -->
+    <section id="view-list" hidden>
+      <div class="list-head">
+        <h1>Mis planes de vuelo</h1>
+        <input id="search" type="search" placeholder="Buscar por matrícula o aeródromo">
+      </div>
+      <table class="plans">
+        <thead><tr><th>Salida (UTC)</th><th>Aeronave</th><th>Ruta</th><th>Estado</th><th></th></tr></thead>
+        <tbody id="plans-body"></tbody>
+      </table>
+      <p id="empty" class="hint" hidden>Todavía no guardaste planes. <a href="#/nuevo">Cargá el primero</a>.</p>
+    </section>
+
+    <!-- Detalle -->
+    <section id="view-detail" hidden>
+      <div class="list-head">
+        <h1 id="detail-title"></h1>
+        <div class="actions">
+          <a id="btn-edit" class="btn">Editar</a>
+          <button id="btn-dup" class="btn">Duplicar</button>
+          <button id="btn-print" class="btn">Imprimir / PDF</button>
+          <button id="btn-delete" class="btn danger">Eliminar</button>
+          <button id="btn-send" class="primary">Enviar a DINACIA</button>
+        </div>
+      </div>
+      <ul id="detail-warnings" class="warnings"></ul>
+      <div class="card sheet-card">
+        <h2>Formulario OACI</h2>
+        <div class="sheet-wrap"><div class="sheet-scale" id="sheet"></div></div>
+        <p class="hint" style="margin:10px 0 0">Las casillas tachadas en la casilla 19 son equipos que no lleva la aeronave. Con <b>Imprimir / PDF</b> lo guardás como PDF.</p>
+      </div>
+      <div class="card">
+        <h2>Correo que se enviará</h2>
+        <p><b>Para:</b> <span id="mail-to"></span><br><b>Asunto:</b> <span id="mail-subject"></span></p>
+        <pre id="mail-body"></pre>
+      </div>
+      <div class="card">
+        <h2>Historial de envíos</h2>
+        <ul id="history" class="history"></ul>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="confirm">
+    <form method="dialog">
+      <h2>¿Enviar el plan de vuelo?</h2>
+      <p id="confirm-text"></p>
+      <div class="actions">
+        <button value="cancel" class="btn">Cancelar</button>
+        <button value="ok" class="primary">Sí, enviar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <datalist id="aerodromes">
+    <option value="SUMU">Montevideo / Carrasco</option>
+    <option value="SUAA">Montevideo / Ángel S. Adami</option>
+    <option value="SULS">Maldonado / Laguna del Sauce</option>
+    <option value="SUPE">Punta del Este / El Jagüel</option>
+    <option value="SUDU">Durazno / Santa Bernardina</option>
+    <option value="SUSO">Salto / Nueva Hespérides</option>
+    <option value="SUPU">Paysandú / Tydeo Larre Borges</option>
+    <option value="SURV">Rivera / Pres. Óscar D. Gestido</option>
+    <option value="SUME">Mercedes / Ricardo Detomasi</option>
+    <option value="SUCA">Colonia / Laguna de los Patos</option>
+    <option value="SUAG">Artigas</option>
+    <option value="SUMO">Melo / Cerro Largo</option>
+    <option value="SUTB">Tacuarembó</option>
+    <option value="SUTR">Treinta y Tres</option>
+  </datalist>
+
+  <div id="toast" class="toast" hidden></div>
+  <script src="sheet.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
