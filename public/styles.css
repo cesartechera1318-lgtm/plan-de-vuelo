@@ -117,3 +117,6 @@ nav button.link { color: #fff; opacity: .85; }
   .sheet-scale { transform: none !important; }
   .sheet { zoom: 0.93; }
 }
+
+.auth-intro h2 { font-size: 16px; margin: 20px 0 8px; }
+.seo-list { margin: 0; padding-left: 18px; color: var(--muted); font-size: 14px; display: grid; gap: 6px; }
