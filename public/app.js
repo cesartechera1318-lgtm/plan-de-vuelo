@@ -147,7 +147,7 @@ async function renderDetail(id) {
   $('#detail-title').textContent = `${plan.aircraftId} · ${plan.departure} → ${plan.destination}`;
   $('#btn-edit').href = `#/editar/${plan.id}`;
   $('#btn-pdf').href = `/api/plans/${plan.id}/pdf?download=1`;
-  $('#mail-to').textContent = config.mode === 'test' ? `${config.recipient} (modo prueba)` : config.dinaciaEmail;
+  $('#mail-to').textContent = config.mode === 'test' ? `${config.dinaciaEmail} (próximamente en servicio)` : config.dinaciaEmail;
   $('#mail-subject').textContent = plan.email.subject;
   $('#mail-body').textContent = plan.email.text;
   renderWarnings(plan.warnings, $('#detail-warnings'));
@@ -155,12 +155,12 @@ async function renderDetail(id) {
   $('#sheet').innerHTML = renderSheet({ ...plan, history: sent });
   requestAnimationFrame(fitSheet);
   $('#history').innerHTML = plan.submissions.length
-    ? plan.submissions.map((s) => `<li class="${s.result}">${esc(s.sent_at.replace('T', ' ').replace('Z', ' UTC'))} · ${esc(modeLabel(s.mode))} → ${esc(s.recipient)} · ${s.result === 'ok' ? 'OK' : 'Error: ' + esc(s.error)}</li>`).join('')
+    ? plan.submissions.map((s) => `<li class="${s.result}">${esc(s.sent_at.replace('T', ' ').replace('Z', ' UTC'))} · ${esc(modeLabel(s.mode))}${s.recipient ? ' → ' + esc(s.recipient) : ''} · ${s.result === 'ok' ? 'OK' : 'Error: ' + esc(s.error)}</li>`).join('')
     : '<li class="muted">Sin envíos todavía.</li>';
 }
 
 function modeLabel(m) {
-  return { preview: 'Simulación (no enviado)', test: 'Prueba', live: 'Envío a DINACIA' }[m] || m;
+  return { preview: 'Simulación (no enviado)', test: 'Prueba (no presentado ante DINACIA)', live: 'Envío a DINACIA' }[m] || m;
 }
 
 $('#btn-send').addEventListener('click', async () => {
@@ -168,7 +168,7 @@ $('#btn-send').addEventListener('click', async () => {
   const where = config.mode === 'live'
     ? `Se enviará un correo REAL a <b>${esc(config.dinaciaEmail)}</b>.`
     : config.mode === 'test'
-      ? `Modo prueba: se enviará solo a <b>${esc(config.recipient)}</b>, no a DINACIA.`
+      ? '<b>Próximamente en servicio.</b> El envío a DINACIA todavía no está activo: este plan <b>no</b> se presenta ante DINACIA.'
       : 'Modo simulación: no se envía ningún correo; se genera el archivo para revisarlo.';
   const warn = p.warnings.length ? `<br><br>${p.warnings.map((w) => '⚠ ' + esc(w)).join('<br>')}` : '';
   $('#confirm-text').innerHTML = `${esc(p.aircraftId)} ${esc(p.departure)} → ${esc(p.destination)}, salida ${esc(p.data.departureDate)} ${esc(p.data.departureTime)} UTC.<br><br>${where}${warn}`;
@@ -180,7 +180,7 @@ $('#btn-send').addEventListener('click', async () => {
     if (dlg.returnValue !== 'ok') return;
     try {
       const r = await api(`/api/plans/${p.id}/send`, { method: 'POST', body: { confirm: true } });
-      toast(r.mode === 'preview' ? `Simulación lista (${r.file}).` : `Enviado a ${r.recipient}.`);
+      toast(r.mode === 'preview' ? `Simulación lista (${r.file}).` : r.mode === 'test' ? 'Próximamente en servicio: el plan no se presentó ante DINACIA.' : `Enviado a ${r.recipient}.`);
     } catch (err) {
       toast(`No se pudo enviar: ${err.message}`, 'err');
     }
@@ -304,7 +304,7 @@ const pick = (o, keys) => Object.fromEntries(keys.map((k) => [k, o[k]]));
   if (config.mode !== 'live') {
     b.hidden = false;
     b.textContent = config.mode === 'test'
-      ? `Modo prueba: los envíos van solo a ${config.recipient}, no a DINACIA.`
+      ? 'Próximamente en servicio: el envío de planes a DINACIA todavía no está activo.'
       : 'Modo simulación: los envíos no salen por correo; se generan para revisarlos.';
   }
   window.addEventListener('hashchange', route);

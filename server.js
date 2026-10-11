@@ -36,7 +36,8 @@ function prepare(body) {
 
 app.get('/api/config', (req, res) => {
   const c = mail.config();
-  res.json({ mode: c.mode, requestedMode: c.requestedMode, recipient: c.recipient, dinaciaEmail: c.dinaciaEmail });
+  // En modo prueba no se muestra a quién llegan los envíos (es el correo personal del administrador).
+  res.json({ mode: c.mode, recipient: c.mode === 'test' ? null : c.recipient, dinaciaEmail: c.dinaciaEmail });
 });
 
 // Vista previa del mensaje sin guardar.
@@ -52,7 +53,8 @@ app.get('/api/plans', (req, res) => res.json(plans.list(req.user.id)));
 app.get('/api/plans/:id', (req, res) => {
   const plan = plans.get(req.user.id, Number(req.params.id));
   if (!plan) return res.status(404).json({ error: 'Plan no encontrado.' });
-  res.json({ ...plan, warnings: fpl.warnings(plan.data), email: mail.compose(plan) });
+  const submissions = plan.submissions.map((s) => (s.mode === 'test' ? { ...s, recipient: null } : s));
+  res.json({ ...plan, submissions, warnings: fpl.warnings(plan.data), email: mail.compose(plan) });
 });
 
 // Formulario OACI en PDF (el mismo que se adjunta al correo).
@@ -98,7 +100,7 @@ app.post('/api/plans/:id/send', async (req, res) => {
   try {
     const r = await mail.send(plan, req.user);
     plans.logSubmission(id, { ...r, result: 'ok' });
-    res.json({ ...r, file: r.file ? path.basename(r.file) : null });
+    res.json({ ...r, recipient: r.mode === 'test' ? null : r.recipient, file: r.file ? path.basename(r.file) : null });
   } catch (err) {
     const cfg = mail.config();
     plans.logSubmission(id, { mode: cfg.mode, recipient: cfg.recipient || '-', subject: '-', result: 'error', error: err.message });
