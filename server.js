@@ -35,7 +35,7 @@ function prepare(body) {
 
 app.get('/api/config', (req, res) => {
   const c = mail.config();
-  res.json({ mode: c.mode, recipient: c.recipient, dinaciaEmail: c.dinaciaEmail });
+  res.json({ mode: c.mode, requestedMode: c.requestedMode, recipient: c.recipient, dinaciaEmail: c.dinaciaEmail });
 });
 
 // Vista previa del mensaje sin guardar.

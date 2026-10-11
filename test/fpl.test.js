@@ -33,3 +33,12 @@ test('bloquea FL290-FL410 sin RVSM', () => {
   const e = fpl.validate(fpl.normalize({ ...base, flightRules: 'I', cruisingLevel: 'F310' }));
   assert.ok(e.cruisingLevel);
 });
+
+test('MAIL_MODE desconocido o mal escrito nunca envía', () => {
+  const { execFileSync } = require('node:child_process');
+  const run = (v) => execFileSync(process.execPath, ['--no-warnings', '-e', "console.log(require('./src/mail').config().mode)"], { env: { ...process.env, MAIL_MODE: v }, cwd: require('node:path').join(__dirname, '..') }).toString().trim();
+  assert.strictEqual(run('Test '), 'test');
+  assert.strictEqual(run('"live"'), 'live');
+  assert.strictEqual(run('tset'), 'preview');
+  assert.strictEqual(run(''), 'preview');
+});

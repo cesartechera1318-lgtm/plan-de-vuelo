@@ -6,10 +6,13 @@ const nodemailer = require('nodemailer');
 //   preview (por defecto) -> no envía nada; guarda el .eml en data/outbox para revisarlo.
 //   test                  -> envía SOLO a TEST_RECIPIENT (tu propio correo).
 //   live                  -> envía a DINACIA (DINACIA_EMAIL, por defecto plandevuelo@dinacia.gub.uy).
-const MODE = (process.env.MAIL_MODE || 'preview').toLowerCase();
-const DINACIA_EMAIL = process.env.DINACIA_EMAIL || 'plandevuelo@dinacia.gub.uy';
-const TEST_RECIPIENT = process.env.TEST_RECIPIENT || '';
-const FROM = process.env.MAIL_FROM || process.env.SMTP_USER || 'planes@example.com';
+// Cualquier valor que no sea exactamente test o live (vacío, mal escrito, con comillas) cae en preview: nunca envía.
+const RAW_MODE = String(process.env.MAIL_MODE || '').trim().replace(/^["']|["']$/g, '').toLowerCase();
+const MODE = ['test', 'live'].includes(RAW_MODE) ? RAW_MODE : 'preview';
+const clean = (v) => String(v || '').trim().replace(/^["']|["']$/g, '');
+const DINACIA_EMAIL = clean(process.env.DINACIA_EMAIL) || 'plandevuelo@dinacia.gub.uy';
+const TEST_RECIPIENT = clean(process.env.TEST_RECIPIENT);
+const FROM = clean(process.env.MAIL_FROM) || clean(process.env.SMTP_USER) || 'planes@example.com';
 const outbox = path.join(__dirname, '..', 'data', 'outbox');
 
 function recipient() {
@@ -19,7 +22,7 @@ function recipient() {
 }
 
 function config() {
-  return { mode: MODE, recipient: recipient(), dinaciaEmail: DINACIA_EMAIL, from: FROM,
+  return { mode: MODE, requestedMode: RAW_MODE || null, recipient: recipient(), dinaciaEmail: DINACIA_EMAIL, from: FROM,
     ready: MODE === 'preview' || (!!process.env.SMTP_HOST && (MODE !== 'test' || !!TEST_RECIPIENT)) };
 }
 
