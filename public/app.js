@@ -146,6 +146,7 @@ async function renderDetail(id) {
   currentPlan = plan;
   $('#detail-title').textContent = `${plan.aircraftId} · ${plan.departure} → ${plan.destination}`;
   $('#btn-edit').href = `#/editar/${plan.id}`;
+  $('#btn-pdf').href = `/api/plans/${plan.id}/pdf?download=1`;
   $('#mail-to').textContent = config.mode === 'test' ? `${config.recipient} (modo prueba)` : config.dinaciaEmail;
   $('#mail-subject').textContent = plan.email.subject;
   $('#mail-body').textContent = plan.email.text;

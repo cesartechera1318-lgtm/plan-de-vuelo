@@ -1,6 +1,7 @@
 const path = require('node:path');
 const fs = require('node:fs');
 const nodemailer = require('nodemailer');
+const sheetPdf = require('./sheet-pdf');
 
 // MAIL_MODE:
 //   preview (por defecto) -> no envía nada; guarda el .eml en data/outbox para revisarlo.
@@ -52,6 +53,7 @@ function brevoTransport() {
           subject: o.subject,
           textContent: o.text,
           htmlContent: o.html || `<pre style="font-family:Consolas,Menlo,monospace">${esc(o.text)}</pre>`,
+          attachment: o.attachments?.length ? o.attachments.map((a) => ({ name: a.filename, content: Buffer.from(a.content).toString('base64') })) : undefined,
         }),
         signal: AbortSignal.timeout(20000),
       });
@@ -102,6 +104,7 @@ function compose(plan) {
     '',
     ...contact,
     '',
+    'Se adjunta el formulario de plan de vuelo OACI en PDF.',
     'Enviado desde la aplicación de planes de vuelo.',
   ].join('\n');
   const html = `<p>Se presenta el siguiente plan de vuelo:</p>
@@ -109,14 +112,27 @@ function compose(plan) {
 <p><b>Información suplementaria (casilla 19):</b></p>
 <pre style="font-family:Consolas,Menlo,monospace;font-size:14px;background:#f4f6f8;padding:12px;border-radius:6px">-${esc(m.item19)}</pre>
 <p>${contact.map(esc).join('<br>')}</p>
+<p>Se adjunta el formulario de plan de vuelo OACI en PDF.</p>
 <p style="color:#666;font-size:12px">Enviado desde la aplicación de planes de vuelo.</p>`;
   return { subject, text, html };
+}
+
+function pdfName(plan) {
+  const p = plan.data;
+  return `plan-de-vuelo-${[p.aircraftId, p.departureAerodrome, p.destinationAerodrome, p.departureDate].filter(Boolean).join('-')}.pdf`.replace(/[^A-Za-z0-9._-]/g, '');
 }
 
 async function send(plan, user) {
   const { subject, text, html } = compose(plan);
   const to = recipient();
   const p = plan.data;
+  // El formulario OACI va como PDF adjunto; si no se pudiera generar, el plan sale igual (el texto FPL es lo que vale).
+  let attachments;
+  try {
+    attachments = [{ filename: pdfName(plan), content: await sheetPdf.render(plan), contentType: 'application/pdf' }];
+  } catch (err) {
+    console.error('No se pudo generar el PDF del plan', plan.id, err);
+  }
   const info = await transport().sendMail({
     from: FROM,
     to,
@@ -125,6 +141,7 @@ async function send(plan, user) {
     subject,
     text,
     html,
+    attachments,
   });
   let file = null;
   if (MODE === 'preview') {
@@ -149,4 +166,4 @@ async function sendPasswordReset(user, link) {
   }
 }
 
-module.exports = { config, compose, send, sendPasswordReset };
+module.exports = { config, compose, send, sendPasswordReset, pdfName };

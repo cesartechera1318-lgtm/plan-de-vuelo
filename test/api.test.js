@@ -46,6 +46,8 @@ test('cada piloto ve solo sus planes', async () => {
   assert.strictEqual((await ana('GET', '/api/plans')).body.length, 1);
   const sent = await ana('POST', `/api/plans/${created.body.id}/send`, { confirm: true });
   assert.strictEqual(sent.body.mode, 'preview');
+  const pdf = await fetch(`${base}/api/plans/${created.body.id}/pdf`);
+  assert.strictEqual(pdf.status, 401); // sin sesión no hay PDF
 });
 
 test('registro, login y errores', async () => {

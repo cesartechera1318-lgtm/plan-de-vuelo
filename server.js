@@ -4,6 +4,7 @@ const fpl = require('./src/fpl');
 const { plans } = require('./src/db');
 const mail = require('./src/mail');
 const auth = require('./src/auth');
+const sheetPdf = require('./src/sheet-pdf');
 
 const app = express();
 app.set('trust proxy', 1);
@@ -52,6 +53,17 @@ app.get('/api/plans/:id', (req, res) => {
   const plan = plans.get(req.user.id, Number(req.params.id));
   if (!plan) return res.status(404).json({ error: 'Plan no encontrado.' });
   res.json({ ...plan, warnings: fpl.warnings(plan.data), email: mail.compose(plan) });
+});
+
+// Formulario OACI en PDF (el mismo que se adjunta al correo).
+app.get('/api/plans/:id/pdf', async (req, res) => {
+  const plan = plans.get(req.user.id, Number(req.params.id));
+  if (!plan) return res.status(404).json({ error: 'Plan no encontrado.' });
+  const live = (plan.submissions || []).find((s) => s.result === 'ok' && s.mode === 'live'); // la más reciente va primero
+  const pdf = await sheetPdf.render(plan, { filedAt: live ? new Date(live.sent_at) : null });
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', `${req.query.download ? 'attachment' : 'inline'}; filename="${mail.pdfName(plan)}"`);
+  res.end(pdf);
 });
 
 app.post('/api/plans', (req, res) => {
