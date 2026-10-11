@@ -310,3 +310,26 @@ const pick = (o, keys) => Object.fromEntries(keys.map((k) => [k, o[k]]));
   window.addEventListener('hashchange', route);
   route();
 })();
+
+// Ojito para mostrar u ocultar las contraseñas.
+const EYE = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+const EYE_OFF = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 19c-6.5 0-10-7-10-7a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A9.1 9.1 0 0 1 12 4c6.5 0 10 7 10 7a18.5 18.5 0 0 1-2.16 3.19M1 1l22 22"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/></svg>';
+$$('input[type=password]').forEach((input) => {
+  const wrap = document.createElement('span');
+  wrap.className = 'pw';
+  input.replaceWith(wrap);
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'pw-toggle';
+  const sync = () => {
+    const shown = input.type === 'text';
+    btn.innerHTML = shown ? EYE_OFF : EYE;
+    btn.setAttribute('aria-label', shown ? 'Ocultar contraseña' : 'Mostrar contraseña');
+    btn.setAttribute('aria-pressed', String(shown));
+  };
+  btn.addEventListener('click', () => { input.type = input.type === 'password' ? 'text' : 'password'; sync(); input.focus(); });
+  input.form?.addEventListener('reset', () => { input.type = 'password'; sync(); });
+  input.form?.addEventListener('submit', () => { input.type = 'password'; sync(); });
+  wrap.append(input, btn);
+  sync();
+});

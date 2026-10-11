@@ -142,3 +142,7 @@ nav button.link { color: #fff; opacity: .85; }
 .guide-links { margin-top: 14px; font-size: 14px; }
 .guide-links a { color: var(--brand-2); }
 .guide .cta .primary, .guide .cta .primary:hover { color: #fff; }
+.pw { position: relative; display: block; }
+.pw input { padding-right: 42px; }
+.pw-toggle { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); background: none; border: none; padding: 6px; color: var(--muted); cursor: pointer; display: grid; place-items: center; }
+.pw-toggle:hover { color: var(--text); }
