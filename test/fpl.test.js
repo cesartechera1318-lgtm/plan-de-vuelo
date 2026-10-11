@@ -62,6 +62,7 @@ test('envío por Brevo arma el pedido correcto', async () => {
   assert.deepStrictEqual(out.req.body.sender, { name: 'Plan de Vuelo Uruguay', email: 'plandevuelouruguay@gmail.com' });
   assert.strictEqual(out.req.body.cc, undefined);
   assert.strictEqual(out.r.recipient, 'yo@example.com');
+  assert.match(out.req.body.subject, /^FPL CXABC SUAA-SULS 2030-01-01 1500 UTC · enviado \d{2}\/\d{2} \d{2}:\d{2}:\d{2} UTC$/);
   assert.strictEqual(out.req.body.attachment.length, 1);
   assert.strictEqual(out.req.body.attachment[0].name, 'plan-de-vuelo-CXABC-SUAA-SULS-2030-01-01.pdf');
   assert.ok(Buffer.from(out.req.body.attachment[0].content, 'base64').subarray(0, 5).toString() === '%PDF-');

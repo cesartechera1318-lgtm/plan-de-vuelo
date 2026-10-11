@@ -122,14 +122,23 @@ function pdfName(plan) {
   return `plan-de-vuelo-${[p.aircraftId, p.departureAerodrome, p.destinationAerodrome, p.departureDate].filter(Boolean).join('-')}.pdf`.replace(/[^A-Za-z0-9._-]/g, '');
 }
 
+// Hora de envío (UTC) en el asunto: así cada envío es un correo aparte y Gmail no los agrupa en una conversación.
+function sentStamp(d = new Date()) {
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${pad(d.getUTCDate())}/${pad(d.getUTCMonth() + 1)} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())} UTC`;
+}
+
 async function send(plan, user) {
-  const { subject, text, html } = compose(plan);
+  const now = new Date();
+  const c = compose(plan);
+  const { text, html } = c;
+  const subject = `${c.subject} · enviado ${sentStamp(now)}`;
   const to = recipient();
   const p = plan.data;
   // El formulario OACI va como PDF adjunto; si no se pudiera generar, el plan sale igual (el texto FPL es lo que vale).
   let attachments;
   try {
-    attachments = [{ filename: pdfName(plan), content: await sheetPdf.render(plan), contentType: 'application/pdf' }];
+    attachments = [{ filename: pdfName(plan), content: await sheetPdf.render(plan, { filedAt: now }), contentType: 'application/pdf' }];
   } catch (err) {
     console.error('No se pudo generar el PDF del plan', plan.id, err);
   }
