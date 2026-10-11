@@ -22,6 +22,7 @@
     <nav id="main-nav" hidden>
       <a href="#/nuevo" data-nav="nuevo">Nuevo plan</a>
       <a href="#/planes" data-nav="planes">Mis planes</a>
+      <a href="#/admin" data-nav="admin" id="nav-admin" hidden>Admin</a>
       <span class="who" id="who"></span>
       <button type="button" id="btn-logout" class="link">Salir</button>
     </nav>
@@ -182,6 +183,21 @@
         <tbody id="plans-body"></tbody>
       </table>
       <p id="empty" class="hint" hidden>Todavía no guardaste planes. <a href="#/nuevo">Cargá el primero</a>.</p>
+    </section>
+
+    <!-- Administración -->
+    <section id="view-admin" hidden>
+      <div class="list-head"><h1>Administración</h1></div>
+      <div class="stats">
+        <div class="stat"><b id="st-users">–</b><span>Usuarios</span></div>
+        <div class="stat"><b id="st-new">–</b><span>Nuevos (7 días)</span></div>
+        <div class="stat"><b id="st-plans">–</b><span>Planes guardados</span></div>
+        <div class="stat"><b id="st-sends">–</b><span>Envíos</span></div>
+      </div>
+      <table class="plans">
+        <thead><tr><th>Nombre</th><th>Correo</th><th>Registrado</th><th>Planes</th><th>Envíos</th></tr></thead>
+        <tbody id="admin-body"></tbody>
+      </table>
     </section>
 
     <!-- Detalle -->

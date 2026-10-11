@@ -1,7 +1,7 @@
 const path = require('node:path');
 const express = require('express');
 const fpl = require('./src/fpl');
-const { plans } = require('./src/db');
+const { plans, admin } = require('./src/db');
 const mail = require('./src/mail');
 const auth = require('./src/auth');
 const sheetPdf = require('./src/sheet-pdf');
@@ -45,6 +45,9 @@ app.post('/api/preview', (req, res) => {
   const { errors, ok, message, warnings } = prepare(req.body);
   res.json({ ok, errors, message, warnings });
 });
+
+// Panel de administración: solo para los correos de ADMIN_EMAILS.
+app.get('/api/admin/stats', auth.requireAdmin, (req, res) => res.json(admin.stats()));
 
 app.use('/api/plans', auth.requireUser);
 

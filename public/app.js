@@ -236,6 +236,7 @@ function signedIn(user) {
   me = user;
   $('#who').textContent = user.name;
   $('#main-nav').hidden = false;
+  $('#nav-admin').hidden = !user.admin;
   location.hash = '#/planes';
   if (location.hash === '#/planes') route();
 }
@@ -265,7 +266,7 @@ $('#btn-logout').addEventListener('click', async () => {
 
 // ---------- Rutas ----------
 function show(view, nav) {
-  for (const v of ['auth', 'form', 'list', 'detail']) $(`#view-${v}`).hidden = v !== view;
+  for (const v of ['auth', 'form', 'list', 'detail', 'admin']) $(`#view-${v}`).hidden = v !== view;
   $$('[data-nav]').forEach((a) => a.classList.toggle('active', a.dataset.nav === nav));
 }
 
@@ -276,7 +277,8 @@ async function route() {
   if (!me) { show('auth'); authPane('login'); return; }
   if (h === '#/entrar') { location.hash = '#/planes'; return; }
   try {
-    if ((m = h.match(/^#\/plan\/(\d+)/))) { show('detail', 'planes'); await renderDetail(m[1]); }
+    if (h === '#/admin' && me.admin) { show('admin', 'admin'); await renderAdmin(); }
+    else if ((m = h.match(/^#\/plan\/(\d+)/))) { show('detail', 'planes'); await renderDetail(m[1]); }
     else if ((m = h.match(/^#\/editar\/(\d+)/))) {
       const plan = await api(`/api/plans/${m[1]}`);
       editingId = plan.id; touched = true;
@@ -295,11 +297,21 @@ async function route() {
     toast(err.message, 'err');
   }
 }
+async function renderAdmin() {
+  const st = await api('/api/admin/stats');
+  $('#st-users').textContent = st.users;
+  $('#st-new').textContent = st.usersLast7;
+  $('#st-plans').textContent = st.plans;
+  $('#st-sends').textContent = st.sends;
+  $('#admin-body').innerHTML = st.list.map((u) => `<tr><td>${esc(u.name)}</td><td>${esc(u.email)}</td><td>${esc(u.createdAt.slice(0, 10))}</td><td>${u.plans}</td><td>${u.sends}</td></tr>`).join('')
+    || '<tr><td colspan="5" class="muted">Sin usuarios todavía.</td></tr>';
+}
+
 const pick = (o, keys) => Object.fromEntries(keys.map((k) => [k, o[k]]));
 
 (async () => {
   config = await api('/api/config');
-  try { me = await api('/api/auth/me'); $('#who').textContent = me.name; $('#main-nav').hidden = false; } catch { me = null; }
+  try { me = await api('/api/auth/me'); $('#who').textContent = me.name; $('#main-nav').hidden = false; $('#nav-admin').hidden = !me.admin; } catch { me = null; }
   const b = $('#mode-banner');
   if (config.mode !== 'live') {
     b.hidden = false;

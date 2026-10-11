@@ -7,6 +7,7 @@ const fs = require('node:fs');
 const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'fpl-'));
 process.env.DB_PATH = path.join(dir, 'test.db');
 process.env.MAIL_MODE = 'preview';
+process.env.ADMIN_EMAILS = 'ana@example.com';
 const app = require('../server');
 
 const plan = {
@@ -72,4 +73,17 @@ test('recuperar contraseña', async () => {
   assert.strictEqual((await c('POST', '/api/auth/reset', { token, password: 'nuevaclave' })).status, 200);
   assert.strictEqual((await c('POST', '/api/auth/reset', { token, password: 'nuevaclave' })).status, 400);
   assert.strictEqual((await client()('POST', '/api/auth/login', { email: 'beto@example.com', password: 'nuevaclave' })).status, 200);
+});
+
+test('solo el administrador ve el panel', async () => {
+  const ana = client(), beto = client(), anon = client();
+  await ana('POST', '/api/auth/login', { email: 'ana@example.com', password: 'clave1234' });
+  await beto('POST', '/api/auth/login', { email: 'beto@example.com', password: 'nuevaclave' }); // la cambió el test anterior
+  assert.strictEqual((await anon('GET', '/api/admin/stats')).status, 404);
+  assert.strictEqual((await beto('GET', '/api/admin/stats')).status, 404);
+  assert.strictEqual((await beto('GET', '/api/auth/me')).body.admin, false);
+  const st = await ana('GET', '/api/admin/stats');
+  assert.strictEqual(st.status, 200);
+  assert.ok(st.body.users >= 2);
+  assert.ok(st.body.list.every((u) => !('password_hash' in u)));
 });

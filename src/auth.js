@@ -67,7 +67,15 @@ function rateLimit(max = 10, windowMs = 15 * 60000) {
 }
 
 const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
-const publicUser = (u) => ({ id: u.id, email: u.email, name: u.name });
+// Administradores: correos en ADMIN_EMAILS (separados por coma).
+const ADMINS = String(process.env.ADMIN_EMAILS || '').split(',').map((e) => e.trim().replace(/^["']|["']$/g, '').toLowerCase()).filter(Boolean);
+const isAdmin = (u) => !!u && ADMINS.includes(String(u.email).toLowerCase());
+function requireAdmin(req, res, next) {
+  if (!isAdmin(req.user)) return res.status(404).json({ error: 'No encontrado.' });
+  next();
+}
+
+const publicUser = (u) => ({ id: u.id, email: u.email, name: u.name, admin: isAdmin(u) });
 
 function routes(app, mail) {
   app.post('/api/auth/register', rateLimit(10), async (req, res) => {
@@ -128,4 +136,4 @@ function routes(app, mail) {
   });
 }
 
-module.exports = { loadUser, requireUser, routes, hashPassword, verifyPassword };
+module.exports = { loadUser, requireUser, requireAdmin, routes, hashPassword, verifyPassword };

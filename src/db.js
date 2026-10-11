@@ -146,4 +146,22 @@ const plans = {
   },
 };
 
-module.exports = { users, sessions, resets, plans };
+// Resumen para el administrador (sin contraseñas ni contenido de los planes).
+const admin = {
+  stats() {
+    const one = (sql) => db.prepare(sql).get().n;
+    return {
+      users: one('SELECT COUNT(*) AS n FROM users'),
+      usersLast7: one(`SELECT COUNT(*) AS n FROM users WHERE created_at >= strftime('%Y-%m-%dT%H:%M:%SZ','now','-7 days')`),
+      plans: one('SELECT COUNT(*) AS n FROM flight_plans'),
+      sends: one(`SELECT COUNT(*) AS n FROM submissions WHERE result = 'ok' AND mode != 'preview'`),
+      list: db.prepare(`SELECT u.name, u.email, u.created_at AS createdAt,
+                          (SELECT COUNT(*) FROM flight_plans p WHERE p.user_id = u.id) AS plans,
+                          (SELECT COUNT(*) FROM submissions s JOIN flight_plans p ON p.id = s.flight_plan_id
+                             WHERE p.user_id = u.id AND s.result = 'ok' AND s.mode != 'preview') AS sends
+                        FROM users u ORDER BY u.id DESC`).all(),
+    };
+  },
+};
+
+module.exports = { users, sessions, resets, plans, admin };
