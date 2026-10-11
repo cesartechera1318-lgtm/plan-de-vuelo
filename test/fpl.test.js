@@ -42,3 +42,24 @@ test('MAIL_MODE desconocido o mal escrito nunca envía', () => {
   assert.strictEqual(run('tset'), 'preview');
   assert.strictEqual(run(''), 'preview');
 });
+
+test('envío por Brevo arma el pedido correcto', async () => {
+  const { execFileSync } = require('node:child_process');
+  const script = `
+    let req;
+    global.fetch = async (url, o) => { req = { url, headers: o.headers, body: JSON.parse(o.body) }; return { ok: true, json: async () => ({ messageId: '<x@brevo>' }) }; };
+    const mail = require('./src/mail');
+    const plan = { id: 1, data: { aircraftId: 'CXABC', departureAerodrome: 'SUAA', destinationAerodrome: 'SULS', departureDate: '2030-01-01', departureTime: '1500', pilotInCommand: 'J', contactName: 'Juan', contactPhone: '099', contactEmail: 'juan@example.com' }, message: { fpl: '(FPL-CXABC-VG)', item19: 'E/0400' } };
+    mail.send(plan).then((r) => console.log(JSON.stringify({ r, req })));
+  `;
+  const out = JSON.parse(execFileSync(process.execPath, ['--no-warnings', '-e', script], {
+    cwd: require('node:path').join(__dirname, '..'),
+    env: { ...process.env, MAIL_MODE: 'test', TEST_RECIPIENT: 'yo@example.com', BREVO_API_KEY: 'k', MAIL_FROM: 'Plan de Vuelo Uruguay <plandevuelouruguay@gmail.com>' },
+  }).toString());
+  assert.strictEqual(out.req.url, 'https://api.brevo.com/v3/smtp/email');
+  assert.strictEqual(out.req.headers['api-key'], 'k');
+  assert.deepStrictEqual(out.req.body.to, [{ email: 'yo@example.com' }]);
+  assert.deepStrictEqual(out.req.body.sender, { name: 'Plan de Vuelo Uruguay', email: 'plandevuelouruguay@gmail.com' });
+  assert.strictEqual(out.req.body.cc, undefined);
+  assert.strictEqual(out.r.recipient, 'yo@example.com');
+});

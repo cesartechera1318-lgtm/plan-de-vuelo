@@ -21,22 +21,61 @@ function recipient() {
   return DINACIA_EMAIL; // en preview solo se muestra, no se envía
 }
 
+const BREVO_API_KEY = clean(process.env.BREVO_API_KEY);
+const PROVIDER = BREVO_API_KEY ? 'brevo' : 'smtp';
+
 function config() {
-  return { mode: MODE, requestedMode: RAW_MODE || null, recipient: recipient(), dinaciaEmail: DINACIA_EMAIL, from: FROM,
-    ready: MODE === 'preview' || (!!process.env.SMTP_HOST && (MODE !== 'test' || !!TEST_RECIPIENT)) };
+  const configured = PROVIDER === 'brevo' || !!process.env.SMTP_HOST;
+  return { mode: MODE, requestedMode: RAW_MODE || null, provider: PROVIDER, recipient: recipient(), dinaciaEmail: DINACIA_EMAIL, from: FROM,
+    ready: MODE === 'preview' || (configured && (MODE !== 'test' || !!TEST_RECIPIENT)) };
+}
+
+// "Nombre <correo@x>" -> { name, email }
+function parseAddress(a) {
+  const m = String(a || '').match(/^\s*(.*?)\s*<([^>]+)>\s*$/);
+  return m ? { name: m[1].replace(/^["']|["']$/g, '') || undefined, email: m[2].trim() } : { email: String(a).trim() };
+}
+
+// Envío por la API HTTPS de Brevo (sirve en hosts que bloquean SMTP, como Railway Hobby).
+function brevoTransport() {
+  return {
+    async sendMail(o) {
+      const list = (v) => (v ? [].concat(v).map(parseAddress) : undefined);
+      const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: { 'api-key': BREVO_API_KEY, 'content-type': 'application/json', accept: 'application/json' },
+        body: JSON.stringify({
+          sender: parseAddress(o.from),
+          to: list(o.to),
+          cc: list(o.cc),
+          replyTo: o.replyTo ? parseAddress(o.replyTo) : undefined,
+          subject: o.subject,
+          textContent: o.text,
+          htmlContent: o.html || `<pre style="font-family:Consolas,Menlo,monospace">${esc(o.text)}</pre>`,
+        }),
+        signal: AbortSignal.timeout(20000),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(`Brevo rechazó el envío (${res.status}): ${body.message || body.code || 'error desconocido'}`);
+      return { messageId: body.messageId };
+    },
+  };
 }
 
 function transport() {
   if (MODE === 'preview') {
     return nodemailer.createTransport({ streamTransport: true, newline: 'unix', buffer: true });
   }
-  if (!process.env.SMTP_HOST) throw new Error('Falta configurar SMTP_HOST para enviar correos.');
   if (MODE === 'test' && !TEST_RECIPIENT) throw new Error('Falta TEST_RECIPIENT para el modo de prueba.');
+  if (PROVIDER === 'brevo') return brevoTransport();
+  if (!process.env.SMTP_HOST) throw new Error('Falta configurar BREVO_API_KEY o SMTP_HOST para enviar correos.');
   return nodemailer.createTransport({
     host: process.env.SMTP_HOST,
     port: Number(process.env.SMTP_PORT || 587),
     secure: process.env.SMTP_SECURE === 'true',
     auth: process.env.SMTP_USER ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS } : undefined,
+    connectionTimeout: 15000,
+    greetingTimeout: 15000,
   });
 }
 

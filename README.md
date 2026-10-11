@@ -49,6 +49,11 @@ Railway detecta el `Dockerfile`.
 **Servidor propio**: `docker build -t plan-de-vuelo . && docker run -d -p 3000:3000 -v planes:/data --env-file .env plan-de-vuelo`
 detrás de un proxy con HTTPS (Caddy o Nginx).
 
+### Envío de correos
+Con `BREVO_API_KEY` la app manda por la API HTTPS de Brevo (gratis hasta 300 correos por día). Es la opción para Railway,
+que bloquea SMTP en el plan Hobby. El remitente (`MAIL_FROM`) tiene que estar verificado en Brevo como *sender*.
+Sin `BREVO_API_KEY` se usa SMTP (`SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`).
+
 ## Estructura
 - `server.js` — API (Express)
 - `src/fpl.js` — validación y armado del mensaje OACI
