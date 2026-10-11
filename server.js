@@ -23,7 +23,7 @@ app.use('/api', (req, res, next) => {
   }
   next();
 });
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'] })); // /guias/x sirve /guias/x.html
 app.use(auth.loadUser);
 auth.routes(app, mail);
 

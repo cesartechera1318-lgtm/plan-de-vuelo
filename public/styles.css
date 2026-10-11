@@ -120,3 +120,25 @@ nav button.link { color: #fff; opacity: .85; }
 
 .auth-intro h2 { font-size: 16px; margin: 20px 0 8px; }
 .seo-list { margin: 0; padding-left: 18px; color: var(--muted); font-size: 14px; display: grid; gap: 6px; }
+
+/* Guías (páginas públicas de contenido) */
+.top .brand a { color: #fff; text-decoration: none; }
+.guide { max-width: 780px; margin: 0 auto; padding: 24px 16px 60px; }
+.guide h1 { font-size: 28px; line-height: 1.2; margin: 6px 0 10px; text-wrap: balance; }
+.guide h2 { font-size: 19px; margin: 30px 0 8px; color: var(--brand); }
+.guide h3 { font-size: 16px; margin: 20px 0 6px; }
+.guide p, .guide li { font-size: 16px; line-height: 1.6; }
+.guide ul, .guide ol { padding-left: 22px; }
+.guide code { font-family: var(--mono); background: #eef2f6; padding: 1px 5px; border-radius: 4px; font-size: 14px; }
+.guide table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 15px; background: var(--card); }
+.guide th, .guide td { text-align: left; padding: 8px 10px; border: 1px solid var(--line); vertical-align: top; }
+.guide th { background: #fafbfc; }
+.guide .crumbs { font-size: 14px; color: var(--muted); }
+.guide .crumbs a, .guide a { color: var(--brand-2); }
+.guide .note { background: #fff4d6; color: #6b4a00; border-radius: 8px; padding: 10px 14px; font-size: 14px; }
+.guide .cta { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-top: 30px; }
+.guide .cta .primary { display: inline-block; text-decoration: none; margin-top: 6px; }
+.guide .table-wrap { overflow-x: auto; }
+.guide-links { margin-top: 14px; font-size: 14px; }
+.guide-links a { color: var(--brand-2); }
+.guide .cta .primary, .guide .cta .primary:hover { color: #fff; }
