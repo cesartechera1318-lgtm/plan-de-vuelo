@@ -47,7 +47,81 @@ function fillForm(data) {
     else if (el.type === 'checkbox') el.checked = !!v;
     else el.value = v ?? '';
   }
+  hiddenToSplit();
 }
+
+// ---------- Casillas divididas (10, 15 y 18) ----------
+// Los controles visibles no tienen name: arman el valor de un input oculto que es lo que se guarda.
+const CODES = {
+  equipment: [['N', 'Sin equipo'], ['S', 'Estándar (VHF, VOR, ILS)'], ['A', 'GBAS'], ['B', 'LPV'], ['C', 'LORAN C'], ['D', 'DME'],
+    ['E1', 'FMC WPR ACARS'], ['E2', 'D-FIS ACARS'], ['E3', 'PDC ACARS'], ['F', 'ADF'], ['G', 'GNSS'], ['H', 'HF RTF'], ['I', 'Navegación inercial'],
+    ['J1', 'CPDLC ATN VDL2'], ['J2', 'CPDLC FANS HFDL'], ['J3', 'CPDLC FANS VDL A'], ['J4', 'CPDLC FANS VDL 2'], ['J5', 'CPDLC FANS SATCOM INMARSAT'],
+    ['J6', 'CPDLC FANS SATCOM MTSAT'], ['J7', 'CPDLC FANS SATCOM Iridium'], ['K', 'MLS'], ['L', 'ILS'], ['M1', 'SATVOICE INMARSAT'], ['M2', 'SATVOICE MTSAT'],
+    ['M3', 'SATVOICE Iridium'], ['O', 'VOR'], ['P1', 'RCP 400'], ['P2', 'RCP 240'], ['P3', 'SATVOICE RCP 400'], ['R', 'Aprobación PBN'], ['T', 'TACAN'],
+    ['U', 'UHF RTF'], ['V', 'VHF RTF'], ['W', 'Aprobación RVSM'], ['X', 'Aprobación MNPS'], ['Y', 'VHF 8,33 kHz'], ['Z', 'Otro equipo (detallar en 18)']],
+  surveillance: [['N', 'Sin equipo'], ['A', 'Transpondedor modo A'], ['C', 'Modo A y C'], ['E', 'Modo S con ID, altitud y squitter'],
+    ['H', 'Modo S con ID, altitud y vigilancia mejorada'], ['I', 'Modo S con ID, sin altitud'], ['L', 'Modo S completo'], ['P', 'Modo S con altitud, sin ID'],
+    ['S', 'Modo S con ID y altitud'], ['X', 'Modo S sin ID ni altitud'], ['B1', 'ADS-B out 1090'], ['B2', 'ADS-B out/in 1090'], ['U1', 'ADS-B out UAT'],
+    ['U2', 'ADS-B out/in UAT'], ['V1', 'ADS-B out VDL4'], ['V2', 'ADS-B out/in VDL4'], ['D1', 'ADS-C FANS'], ['G1', 'ADS-C ATN']],
+};
+const ITEM18 = [['STS', 'Motivo de tratamiento especial'], ['PBN', 'Capacidades PBN'], ['NAV', 'Otro equipo de navegación'], ['COM', 'Otro equipo de comunicaciones'],
+  ['DAT', 'Enlace de datos'], ['SUR', 'Otro equipo de vigilancia'], ['DEP', 'Salida (si pusiste ZZZZ)'], ['DEST', 'Destino (si pusiste ZZZZ)'],
+  ['DOF', 'Fecha de vuelo AAMMDD (automática)'], ['REG', 'Matrícula (si difiere de la casilla 7)'], ['EET', 'EET a puntos o límites FIR'], ['SEL', 'Código SELCAL'],
+  ['TYP', 'Tipo de aeronave (si pusiste ZZZZ)'], ['CODE', 'Dirección de aeronave (hex)'], ['DLE', 'Demora en ruta'], ['OPR', 'Explotador'], ['ORGN', 'Originador'],
+  ['PER', 'Performance (A a H)'], ['ALTN', 'Alternativo de destino (si ZZZZ)'], ['RALT', 'Alternativos en ruta'], ['TALT', 'Alternativo de despegue'],
+  ['RIF', 'Ruta hasta nuevo destino'], ['RMK', 'Otras observaciones']];
+
+for (const [field, list] of Object.entries(CODES)) {
+  $(`[data-codes="${field}"]`).innerHTML = list.map(([c, t]) => `<label><input type="checkbox" data-code="${c}"><b>${c}</b> ${esc(t)}</label>`).join('');
+}
+$('[data-item18]').innerHTML = ITEM18.map(([k, t]) => `<label${['RMK', 'EET', 'RIF'].includes(k) ? ' class="wide"' : ''}>${k}/ · ${esc(t)}<input data-i18="${k}"${k === 'DOF' ? ' placeholder="se completa con la fecha" maxlength="6"' : ''}></label>`).join('');
+
+const part = (n) => $(`[data-part="${n}"]`);
+function splitToHidden() {
+  for (const field of Object.keys(CODES)) {
+    form.elements[field].value = $$(`[data-codes="${field}"] input:checked`).map((c) => c.dataset.code).join('');
+  }
+  const sv = part('speedValue').value.replace(/\D/g, '');
+  const su = part('speedUnit').value;
+  form.elements.cruisingSpeed.value = sv ? su + sv.padStart(su === 'M' ? 3 : 4, '0') : '';
+  const lu = part('levelUnit').value;
+  const lv = part('levelValue').value.replace(/\D/g, '');
+  part('levelValue').disabled = lu === 'VFR';
+  form.elements.cruisingLevel.value = lu === 'VFR' ? 'VFR' : lv ? lu + lv.padStart('AF'.includes(lu) ? 3 : 4, '0') : '';
+  form.elements.otherInfo.value = $$('[data-i18]').filter((i) => i.value.trim()).map((i) => `${i.dataset.i18}/${i.value.trim()}`).join(' ');
+}
+function hiddenToSplit() {
+  for (const field of Object.keys(CODES)) {
+    const have = form.elements[field].value.toUpperCase().match(/[A-Z]\d?/g) || [];
+    $$(`[data-codes="${field}"] input`).forEach((c) => (c.checked = have.includes(c.dataset.code)));
+  }
+  const sp = form.elements.cruisingSpeed.value.toUpperCase().match(/^([NKM])(\d+)$/);
+  part('speedUnit').value = sp ? sp[1] : 'N';
+  part('speedValue').value = sp ? sp[2] : '';
+  const lv = form.elements.cruisingLevel.value.toUpperCase();
+  const lm = lv.match(/^([AFSM])(\d+)$/);
+  part('levelUnit').value = lm ? lm[1] : 'VFR';
+  part('levelValue').value = lm ? lm[2] : '';
+  part('levelValue').disabled = !lm;
+  const keys = ITEM18.map(([k]) => k);
+  const vals = {};
+  const re = new RegExp(`(?:^|\\s)(${keys.join('|')})/`, 'g');
+  const txt = form.elements.otherInfo.value.toUpperCase().trim();
+  const marks = [...txt.matchAll(re)];
+  const lead = (marks.length ? txt.slice(0, marks[0].index) : txt).trim();
+  marks.forEach((m, i) => { vals[m[1]] = txt.slice(m.index + m[0].length, marks[i + 1]?.index ?? txt.length).trim(); });
+  if (lead && lead !== '0') vals.RMK = [lead, vals.RMK].filter(Boolean).join(' ');
+  $$('[data-i18]').forEach((i) => (i.value = vals[i.dataset.i18] || ''));
+}
+form.addEventListener('input', splitToHidden);
+form.addEventListener('change', splitToHidden);
+// "N" (sin equipo) excluye al resto de los códigos de esa casilla.
+form.addEventListener('change', (e) => {
+  const box = e.target.closest('[data-codes]');
+  if (!box || !e.target.checked) return;
+  $$('input', box).forEach((c) => { if (c !== e.target && (e.target.dataset.code === 'N' || c.dataset.code === 'N')) c.checked = false; });
+  splitToHidden();
+}, true);
 
 function defaults() {
   const d = new Date(Date.now() + 90 * 60000);
@@ -70,7 +144,7 @@ function showErrors(errors = {}) {
     const input = el instanceof RadioNodeList ? el[0] : el;
     if (!input) continue;
     input.classList.add('invalid');
-    input.closest('label, .checks')?.insertAdjacentHTML('beforeend', `<small class="error-msg">${esc(msg)}</small>`);
+    input.closest('label, .checks, .split')?.insertAdjacentHTML('beforeend', `<small class="error-msg">${esc(msg)}</small>`);
   }
 }
 
@@ -95,7 +169,7 @@ async function updatePreview() {
 }
 
 form.addEventListener('input', (e) => {
-  if (e.target.matches('input:not([type=checkbox]):not([type=date]):not([type=email]):not([type=number])') && !['contactName', 'contactPhone'].includes(e.target.name)) {
+  if (e.target.matches('textarea, input:not([type=checkbox]):not([type=date]):not([type=email]):not([type=number])') && !['contactName', 'contactPhone'].includes(e.target.name)) {
     const pos = e.target.selectionStart;
     e.target.value = e.target.value.toUpperCase();
     try { e.target.setSelectionRange(pos, pos); } catch {}

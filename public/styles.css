@@ -24,7 +24,7 @@ label.inline { flex-direction: row; align-items: center; gap: 6px; align-self: e
 input, select { font: inherit; color: var(--text); padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: #fff; width: 100%; }
 input[type=checkbox] { width: auto; }
 input:focus, select:focus { outline: 2px solid var(--brand-2); outline-offset: -1px; }
-input.invalid, select.invalid { border-color: var(--err); background: #fff6f5; }
+input.invalid, select.invalid, textarea.invalid { border-color: var(--err); background: #fff6f5; }
 .error-msg { color: var(--err); font-size: 12px; }
 .checks { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
 .checks label { flex-direction: row; align-items: center; gap: 6px; color: var(--text); }
@@ -150,3 +150,12 @@ nav button.link { color: #fff; opacity: .85; }
 .stat { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 2px; }
 .stat b { font-size: 28px; color: var(--brand); font-variant-numeric: tabular-nums; }
 .stat span { color: var(--muted); font-size: 13px; }
+.split { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--muted); }
+fieldset > .split + .split { margin-top: 14px; }
+.split-title { color: var(--text); font-weight: 500; }
+.pair { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 6px; }
+.codes { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 4px 12px; }
+.codes label { flex-direction: row; align-items: center; gap: 6px; color: var(--text); font-size: 13px; }
+.codes b { font-family: "IBM Plex Mono", Consolas, monospace; min-width: 20px; }
+textarea { font: inherit; color: var(--text); background: #fff; width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; resize: vertical; text-transform: uppercase; }
+.grid-wide { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }

@@ -85,65 +85,110 @@
           <p class="hint">Formulario OACI según AIP Uruguay ENR 1.10. Las horas son <b>UTC</b>. Presentá el plan al menos 60 minutos antes de la salida.</p>
 
           <fieldset>
-            <legend>Aeronave y reglas</legend>
+            <legend>Casillas 7 a 9 · Aeronave y reglas</legend>
             <div class="grid">
               <label>7 · Identificación de la aeronave<input name="aircraftId" maxlength="7" placeholder="CXABC" required></label>
               <label>8 · Reglas de vuelo
                 <select name="flightRules"><option value="V">V – VFR</option><option value="I">I – IFR</option><option value="Y">Y – IFR luego VFR</option><option value="Z">Z – VFR luego IFR</option></select></label>
-              <label>Tipo de vuelo
+              <label>8 · Tipo de vuelo
                 <select name="flightType"><option value="G">G – Aviación general</option><option value="S">S – Regular</option><option value="N">N – No regular</option><option value="M">M – Militar</option><option value="X">X – Otro</option></select></label>
               <label>9 · Número de aeronaves<input name="numberOfAircraft" type="number" min="1" max="99" value="1"></label>
-              <label>Tipo de aeronave<input name="aircraftType" maxlength="4" placeholder="C172"></label>
-              <label>Estela turbulenta
+              <label>9 · Tipo de aeronave<input name="aircraftType" maxlength="4" placeholder="C172"></label>
+              <label>9 · Categoría de estela turbulenta
                 <select name="wakeTurbulence"><option value="L">L – Ligera</option><option value="M">M – Media</option><option value="H">H – Pesada</option><option value="J">J – Súper</option></select></label>
-              <label>10 · Equipo COM/NAV<input name="equipment" placeholder="S o SDFG"></label>
-              <label>Equipo de vigilancia<input name="surveillance" placeholder="C o N"></label>
             </div>
           </fieldset>
 
           <fieldset>
-            <legend>Salida, ruta y destino</legend>
+            <legend>Casilla 10 · Equipo</legend>
+            <div class="split wide">
+              <span class="split-title">Equipo de comunicaciones y navegación (antes de la barra)</span>
+              <div class="codes" data-codes="equipment"></div>
+              <input type="hidden" name="equipment">
+            </div>
+            <div class="split wide">
+              <span class="split-title">Equipo de vigilancia (después de la barra)</span>
+              <div class="codes" data-codes="surveillance"></div>
+              <input type="hidden" name="surveillance">
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Casilla 13 · Aeródromo y hora de salida</legend>
             <div class="grid">
-              <label>13 · Aeródromo de salida<input name="departureAerodrome" maxlength="4" list="aerodromes" placeholder="SUMU"></label>
+              <label>Aeródromo de salida<input name="departureAerodrome" maxlength="4" list="aerodromes" placeholder="SUMU"></label>
               <label>Fecha (UTC)<input name="departureDate" type="date"></label>
               <label>Hora (UTC, HHMM)<input name="departureTime" maxlength="5" placeholder="1500"></label>
-              <label>15 · Velocidad de crucero<input name="cruisingSpeed" placeholder="N0110"></label>
-              <label>Nivel de crucero<input name="cruisingLevel" placeholder="A045 o VFR"></label>
-              <label class="wide">Ruta<input name="route" placeholder="DCT"></label>
-              <label>16 · Aeródromo de destino<input name="destinationAerodrome" maxlength="4" list="aerodromes" placeholder="SULS"></label>
-              <label>Duración total prevista (HHMM)<input name="totalEet" maxlength="5" placeholder="0045"></label>
-              <label>Aeródromo alternativo<input name="alternate1" maxlength="4" list="aerodromes"></label>
-              <label>2º alternativo<input name="alternate2" maxlength="4" list="aerodromes"></label>
-              <label class="wide">18 · Otros datos<input name="otherInfo" placeholder="PBN/... RMK/... (DOF se agrega solo)"></label>
             </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Casilla 15 · Velocidad, nivel y ruta</legend>
+            <div class="grid grid-wide">
+              <div class="split">
+                <span class="split-title">Velocidad de crucero</span>
+                <div class="pair">
+                  <select data-part="speedUnit" aria-label="Unidad de velocidad"><option value="N">N – Nudos</option><option value="K">K – km/h</option><option value="M">M – Mach</option></select>
+                  <input data-part="speedValue" inputmode="numeric" maxlength="4" placeholder="0110" aria-label="Velocidad">
+                </div>
+                <input type="hidden" name="cruisingSpeed">
+              </div>
+              <div class="split">
+                <span class="split-title">Nivel de crucero</span>
+                <div class="pair">
+                  <select data-part="levelUnit" aria-label="Tipo de nivel"><option value="VFR">VFR</option><option value="A">A – Altitud (pies)</option><option value="F">F – Nivel de vuelo</option><option value="S">S – Nivel métrico</option><option value="M">M – Altitud métrica</option></select>
+                  <input data-part="levelValue" inputmode="numeric" maxlength="4" placeholder="045" aria-label="Nivel">
+                </div>
+                <small class="muted">A045 = 4500 ft · F065 = FL065</small>
+                <input type="hidden" name="cruisingLevel">
+              </div>
+              <label class="wide">Ruta<textarea name="route" rows="2" placeholder="DCT"></textarea></label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Casilla 16 · Destino y alternativos</legend>
+            <div class="grid">
+              <label>Aeródromo de destino<input name="destinationAerodrome" maxlength="4" list="aerodromes" placeholder="SULS"></label>
+              <label>EET total (HHMM)<input name="totalEet" maxlength="5" placeholder="0045"></label>
+              <label>Aeródromo alternativo<input name="alternate1" maxlength="4" list="aerodromes"></label>
+              <label>2º aeródromo alternativo<input name="alternate2" maxlength="4" list="aerodromes"></label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Casilla 18 · Otros datos</legend>
+            <p class="hint">Completá solo los que correspondan. Si queda todo vacío se envía 0. La fecha DOF/ se agrega sola.</p>
+            <div class="grid" data-item18></div>
+            <input type="hidden" name="otherInfo">
           </fieldset>
 
           <fieldset>
             <legend>19 · Información suplementaria</legend>
             <div class="grid">
-              <label>Autonomía (HHMM)<input name="endurance" maxlength="5" placeholder="0400"></label>
-              <label>Personas a bordo<input name="personsOnBoard" maxlength="3" placeholder="2"></label>
-              <div class="checks"><span>Radio de emergencia</span>
+              <label>E/ Autonomía (HHMM)<input name="endurance" maxlength="5" placeholder="0400"></label>
+              <label>P/ Personas a bordo<input name="personsOnBoard" maxlength="3" placeholder="2"></label>
+              <div class="checks"><span>R/ Radio de emergencia</span>
                 <label><input type="checkbox" name="emergencyRadio" value="U">U UHF</label>
                 <label><input type="checkbox" name="emergencyRadio" value="V">V VHF</label>
                 <label><input type="checkbox" name="emergencyRadio" value="E">E ELT</label></div>
-              <div class="checks"><span>Equipo de supervivencia</span>
+              <div class="checks"><span>S/ Equipo de supervivencia</span>
                 <label><input type="checkbox" name="survivalEquipment" value="P">P Polar</label>
                 <label><input type="checkbox" name="survivalEquipment" value="D">D Desierto</label>
                 <label><input type="checkbox" name="survivalEquipment" value="M">M Marítimo</label>
                 <label><input type="checkbox" name="survivalEquipment" value="J">J Selva</label></div>
-              <div class="checks"><span>Chalecos</span>
+              <div class="checks"><span>J/ Chalecos</span>
                 <label><input type="checkbox" name="jackets" value="L">L Luz</label>
                 <label><input type="checkbox" name="jackets" value="F">F Fluoresceína</label>
                 <label><input type="checkbox" name="jackets" value="U">U UHF</label>
                 <label><input type="checkbox" name="jackets" value="V">V VHF</label></div>
-              <label>Botes: número<input name="dinghiesNumber" maxlength="2"></label>
+              <label>D/ Botes: número<input name="dinghiesNumber" maxlength="2"></label>
               <label>Capacidad<input name="dinghiesCapacity" maxlength="3"></label>
               <label class="inline"><input type="checkbox" name="dinghiesCover"> Cubierta</label>
               <label>Color de botes<input name="dinghiesColour"></label>
-              <label class="wide">Color y marcas de la aeronave<input name="aircraftColour" placeholder="BLANCO CON FRANJAS AZULES"></label>
-              <label class="wide">Observaciones<input name="remarks"></label>
-              <label class="wide">Piloto al mando<input name="pilotInCommand"></label>
+              <label class="wide">A/ Color y marcas de la aeronave<input name="aircraftColour" placeholder="BLANCO CON FRANJAS AZULES"></label>
+              <label class="wide">N/ Observaciones<input name="remarks"></label>
+              <label class="wide">C/ Piloto al mando<input name="pilotInCommand"></label>
             </div>
           </fieldset>
 
