@@ -169,7 +169,7 @@ async function updatePreview() {
 }
 
 form.addEventListener('input', (e) => {
-  if (e.target.matches('textarea, input:not([type=checkbox]):not([type=date]):not([type=email]):not([type=number])') && !['contactName', 'contactPhone'].includes(e.target.name)) {
+  if (!e.isComposing && e.target.matches('input:not([type=checkbox]):not([type=date]):not([type=email]):not([type=number])') && !['contactName', 'contactPhone'].includes(e.target.name)) {
     const pos = e.target.selectionStart;
     e.target.value = e.target.value.toUpperCase();
     try { e.target.setSelectionRange(pos, pos); } catch {}
